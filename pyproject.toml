@@ -1,0 +1,74 @@
+[tool.poetry]
+name = "py-package"
+version = "0.1.0"
+description = ""
+authors = ["Nicholas Bruce <nsbruce@uvic.ca>"]
+readme = "README.md"
+packages = [{include = "py_package"}]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+
+[tool.poetry.group.dev.dependencies]
+isort = "^5.10.1"
+black = "^22.3.0"
+mypy = "^0.960"
+pytest = "^7.1.2"
+poethepoet = "^0.13.1"
+flake8 = "^4.0.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+generate-env = 'py_package.environment.generate:main'
+
+[tool.black]
+target-version = ["py39"]
+preview="True"
+
+[tool.isort]
+profile="black"
+
+[tool.mypy]
+python_version = 3.9
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+
+[tool.flake8]
+ignore = ['E203']
+max-line-length = 88
+
+[tool.poe.tasks]
+
+    [tool.poe.tasks.test]
+    cmd = "pytest"
+    help = 'Run tests'
+
+    [tool.poe.tasks.sort]
+    cmd = "isort ."
+    help = "Run isort (sort imports alphabetically)"
+
+    [tool.poe.tasks.blacken]
+    cmd = "black ."
+    help = "Run black (format code)"
+
+    [tool.poe.tasks.mypyify]
+    cmd = "mypy ."
+    help = "Run mypy (type check)"
+
+    [tool.poe.tasks.flake8ify]
+    cmd = "flake8 ."
+    help = "Run flake8 (lint code)"
+
+    [tool.poe.tasks.format]
+    sequence = ["sort", "blacken"]
+    help = "Run isort and black (format code)"
+
+    [tool.poe.tasks.lint]
+    sequence = ["mypyify", "flake8ify"]
+    help = "Run mypy and flake8 (lint code)"

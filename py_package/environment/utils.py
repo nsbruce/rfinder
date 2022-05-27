@@ -46,7 +46,7 @@ def file_to_dict(p: Path) -> dict[str, str]:
     env = {}
     with open(p) as f:
         for line in f:
-            if line.startswith("#"):
+            if line.startswith("#") or line.strip() == '':
                 continue
             key, val = line.split("=")
             env[key] = val.strip()

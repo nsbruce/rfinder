@@ -29,19 +29,23 @@ generate-env = 'py_package.environment.generate:main'
 [tool.black]
 target-version = ["py39"]
 preview="True"
+exclude = '''
+    (
+        \.venv
+        | other_excluded_dir
+    )
+'''
 
 [tool.isort]
 profile="black"
+skip=['.venv.']
 
 [tool.mypy]
 python_version = 3.9
+exclude = ['.venv']
 
 [tool.pytest.ini_options]
 testpaths = "tests"
-
-[tool.flake8]
-ignore = ['E203']
-max-line-length = 88
 
 [tool.poe.tasks]
 

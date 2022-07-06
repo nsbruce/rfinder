@@ -1,14 +1,6 @@
-# Python package starter
+# rfinder
 
 A starting point for spinning up a Python package.
-
-## To use this repo
-
-Once forked, rename the py_package directory to the name of your package. Then open the [pyproject.toml](pyproject.toml) file and change:
-
-- name (line 2)
-- packages (line 7, note the difference between hyphens and underscores!)
-- generate-env script (line 27)
 
 ## Installation
 
@@ -27,7 +19,3 @@ This package is mypy and flake8 compliant. You can lint with `poetry run poe lin
 The package is also formatted with isort and black. Format with `poetry run poe format`.
 
 Although maybe contentious, I have committed the .vscode folder with my [settings.json](.vscode/settings.json) file. If you are using vscode this should make linting "on the go" easier.
-
-## TODO
-
-1. I would like to switch to a poetry plugin for poethepoet's task runner. This should be available soon with a stable poetry v1.2 release. This will shorten the tasks from `poetry run poe task` to `poetry poe task`. There may be other interesting methods available soon with the new plugin ecosystem.

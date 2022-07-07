@@ -1,4 +1,7 @@
 DEFAULT_VARS = {
-    "SAMPLE_1": 0,
-    "SAMPLE_2": "secret_key",
+    "TILE_DIM": 32,
+}
+
+BLOB_VARS = {
+    "MAX_BLOBS_PER_TILE": 5,
 }

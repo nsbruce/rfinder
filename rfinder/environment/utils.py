@@ -1,7 +1,8 @@
 import warnings
 from pathlib import Path
+from typing import Dict, List
 
-from .defaults import DEFAULT_VARS
+from .defaults import DEFAULT_VARS, BLOB_VARS
 
 
 def get_env_dir() -> Path:
@@ -11,7 +12,7 @@ def get_env_dir() -> Path:
     return Path(__file__).parent.parent.parent
 
 
-def get_env_files() -> list[Path]:
+def get_env_files() -> List[Path]:
     """
     Get the list of environment files
     """
@@ -20,7 +21,7 @@ def get_env_files() -> list[Path]:
     return list(env_files)
 
 
-def load_env() -> dict[str, str]:
+def load_env() -> Dict[str, str]:
     """
     Load environment variables from .env file
     """
@@ -38,7 +39,7 @@ def load_env() -> dict[str, str]:
     return env
 
 
-def file_to_dict(p: Path) -> dict[str, str]:
+def file_to_dict(p: Path) -> Dict[str, str]:
     """
     Convert a env formatted file to a dictionary
     TODO could be replaced with python-dotenv package
@@ -46,18 +47,22 @@ def file_to_dict(p: Path) -> dict[str, str]:
     env = {}
     with open(p) as f:
         for line in f:
-            if line.startswith("#") or line.strip() == '':
+            if line.startswith("#") or line.strip() == "":
                 continue
             key, val = line.split("=")
             env[key] = val.strip()
     return env
 
 
-def get_all_defaults() -> dict[str, str]:
+def get_all_defaults() -> Dict[str, str]:
     """
     Get the default values for all environment variables
     *Stringification is done to match the output of file_to_dict
     """
 
-    stringified_vals = {k: str(v) for k, v in DEFAULT_VARS.items()}
+    all_vals = {
+        **DEFAULT_VARS,
+        **BLOB_VARS,
+    }
+    stringified_vals = {k: str(v) for k, v in all_vals.items()}
     return stringified_vals

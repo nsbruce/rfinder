@@ -1,10 +1,8 @@
 from itertools import combinations
 from typing import List
 
-import matplotlib.pyplot as plt
 import numpy as np
 
-import rfinder.plot as rplt
 from rfinder.types import Box
 
 

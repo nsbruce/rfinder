@@ -2,7 +2,7 @@ import warnings
 from pathlib import Path
 from typing import Dict, List
 
-from .defaults import DEFAULT_VARS, BLOB_VARS
+from .defaults import BLOB_VARS, DEFAULT_VARS
 
 
 def get_env_dir() -> Path:

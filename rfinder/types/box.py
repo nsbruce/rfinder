@@ -108,7 +108,7 @@ class Box:
             return 0
         return self.w * self.h
 
-    def merge(self, merge_box: "Box") -> "Box":
+    def merge(self, merge_box: "Box") -> None:
         """
         Merges the box with a passed in box.
         """
@@ -127,9 +127,55 @@ class Box:
         new_y0 = min(my_y0, other_y0)
         new_y1 = max(my_y1, other_y1)
 
-        self.w = new_x1 - new_x0
-        self.cx = new_x0 + self.w / 2
-        self.h = new_y1 - new_y0
-        self.cy = new_y0 + self.h / 2
+        self._update_box(
+            [
+                self.conf,
+                new_x0 + self.w / 2,
+                new_y0 + self.h / 2,
+                new_x1 - new_x0,
+                new_y1 - new_y0,
+            ]
+        )
 
-        return self
+    def overlaps(self, other: "Box") -> bool:
+        """Checks whether the box intersects a passed in box.
+
+        Args:
+            other (Box): Box to check for intersection
+
+        Returns:
+            bool: whether or not the two boxes intersect
+        """
+
+        return self.get_intersection(other).area() > 0
+
+    def get_intersection(self, other: "Box") -> "Box":
+        """Returns intersection box between two boxes
+
+        Args:
+            other (Box): Box to get intersection with
+        Returns:
+            Box: the intersection as a Box
+        """
+
+        x1_a = self.cx - self.w / 2
+        x2_a = x1_a + self.w
+        y1_a = self.cy - self.h / 2
+        y2_a = y1_a + self.h
+
+        x1_b = other.cx - other.w / 2
+        x2_b = x1_b + other.w
+        y1_b = other.cy - other.h / 2
+        y2_b = y1_b + other.h
+
+        x1_I = max(x1_a, x1_b)
+        y1_I = max(y1_a, y1_b)
+        x2_I = min(x2_a, x2_b)
+        y2_I = min(y2_a, y2_b)
+
+        w_I = x2_I - x1_I
+        h_I = y2_I - y1_I
+
+        I_box = Box([1, x1_I + w_I / 2, y1_I + h_I / 2, w_I, h_I])
+
+        return I_box

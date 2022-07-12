@@ -26,30 +26,33 @@ def merge_overlapping(boxes: List[Box]) -> List[Box]:
         else:
             overlapping_boxes.append(box)
 
-    pairs_idxs = combinations(range(len(overlapping_boxes)), 2)
-    merge_groups: List[List[int]] = []
-    for i, j in pairs_idxs:
-        found_group = False
-        if overlapping_boxes[i].overlaps(overlapping_boxes[j]):
-            for merge_group in merge_groups:
-                if i in merge_group:
-                    merge_group.append(j)
-                    found_group = True
-                    continue
-                if j in merge_group:
-                    merge_group.append(i)
-                    found_group = True
-                    continue
-            if not found_group:
-                merge_groups.append([i, j])
+    if len(overlapping_boxes) == 0:
+        return independent_boxes
+    else:
+        pairs_idxs = combinations(range(len(overlapping_boxes)), 2)
+        merge_groups: List[List[int]] = []
+        for i, j in pairs_idxs:
+            found_group = False
+            if overlapping_boxes[i].overlaps(overlapping_boxes[j]):
+                for merge_group in merge_groups:
+                    if i in merge_group:
+                        merge_group.append(j)
+                        found_group = True
+                        continue
+                    if j in merge_group:
+                        merge_group.append(i)
+                        found_group = True
+                        continue
+                if not found_group:
+                    merge_groups.append([i, j])
 
-    for merge_group in merge_groups:
-        idxs = set(merge_group)
-        boxes = [overlapping_boxes[i] for i in idxs]
-        merged_box = merge_all(boxes)
-        independent_boxes.append(merged_box)
+        for merge_group in merge_groups:
+            idxs = set(merge_group)
+            boxes = [overlapping_boxes[i] for i in idxs]
+            merged_box = merge_all(boxes)
+            independent_boxes.append(merged_box)
 
-    return independent_boxes
+        return independent_boxes
 
 
 def merge_two(boxA: Box, boxB: Box) -> Box:

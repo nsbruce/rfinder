@@ -1,14 +1,17 @@
 from rfinder.types import Box
 
+import numpy as np
+
 
 def IOU(a: Box, b: Box) -> float:
-    """
-    Returns the intersection over union for two boxes.
-    Parameters:
-        a: rt.Box
-        b: rt.Box
+    """Returns the intersection over union for two boxes.
+
+    Args:
+        a (Box): First box
+        b (Box): Second box
+
     Returns:
-        iou: float
+        iou (float): Intersection over union of the two boxes
     """
 
     I_box = a.get_intersection(b)
@@ -21,3 +24,18 @@ def IOU(a: Box, b: Box) -> float:
     union = a.area() + b.area() - intersection
 
     return intersection / union
+
+
+def center_distance(a: Box, b: Box) -> float:
+    """
+    Returns the distance between the centers of two boxes.
+
+    Args:
+        a (Box): First box
+        b (Box): Second box
+
+    Returns:
+        distance (float): Distance between the centers of the two boxes
+    """
+
+    return float(np.sqrt((a.cx - b.cx) ** 2 + (a.cy - b.cy) ** 2))

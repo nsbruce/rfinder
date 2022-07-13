@@ -11,7 +11,7 @@ from rfinder.utils.merging import merge_overlapping
 env = load_env()
 
 
-def generate_training_set(N: int) -> List[Tuple[List[Box], npt.NDArray[np.float_]]]:
+def generate_training_set(N: int) -> Tuple[List[List[Box]], List[npt.NDArray[np.float_]]]:
     """Generates training dataset full of blobs
 
     Args:
@@ -25,7 +25,8 @@ def generate_training_set(N: int) -> List[Tuple[List[Box], npt.NDArray[np.float_
     min_blob_dim = 4
     max_blob_dim = tile_dim = int(env["TILE_DIM"])
 
-    result = []
+    all_boxes = []
+    all_pixels = []
 
     for _ in range(N):
         boxes: List[Box] = []
@@ -41,7 +42,6 @@ def generate_training_set(N: int) -> List[Tuple[List[Box], npt.NDArray[np.float_
             min_x, min_y = np.random.randint(0, tile_dim + 1, size=2)
 
             # add the rest of the source
-
             max_x = min(min_x + blob_width, tile_dim - 1)
             max_y = min(min_y + blob_height, tile_dim - 1)
 
@@ -54,8 +54,8 @@ def generate_training_set(N: int) -> List[Tuple[List[Box], npt.NDArray[np.float_
             blob_box = Box(
                 [
                     1.0,  # conf
-                    np.mean([max_x, min_x]),  # cx
-                    np.mean([max_y, min_y]),  # cy
+                    np.mean([max_x, min_x])-0.5,  # cx
+                    np.mean([max_y, min_y])-0.5,  # cy
                     max_x - min_x,  # w
                     max_y - min_y,  # h
                 ]
@@ -67,6 +67,9 @@ def generate_training_set(N: int) -> List[Tuple[List[Box], npt.NDArray[np.float_
 
         boxes = merge_overlapping(boxes)
 
-        result.append((boxes, pixels))
+        all_boxes.append(boxes)
+        all_pixels.append(pixels)
 
-    return result
+    assert len(all_boxes) == len(all_pixels), "Number of boxes and pixels must match"
+
+    return all_boxes, all_pixels

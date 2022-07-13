@@ -39,3 +39,17 @@ def test_three_overlapping_boxes_2() -> None:
     merged = merge_overlapping(boxes)
 
     assert merged[0].as_list() == expected[0].as_list(), "Merged result is not correct"
+
+
+def test_four_recursively_overlapping_boxes() -> None:
+    boxes = [
+        Box([1, 4, 16, 4, 22]),
+        Box([1, 9, 6, 10, 4]),
+        Box([1, 14, 3, 4, 4]),
+        Box([1, 16, 19, 8, 4]),
+    ]
+    expected = [Box([1, 11, 14, 18, 26])]
+
+    merged = merge_overlapping(boxes)
+
+    assert merged[0].as_list() == expected[0].as_list(), "Merged result is not correct"

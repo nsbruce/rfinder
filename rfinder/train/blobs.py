@@ -5,7 +5,7 @@ import numpy.typing as npt
 from scipy.ndimage import gaussian_filter  # type:ignore
 
 from rfinder.environment import load_env
-from rfinder.net.Network import Network
+from rfinder.net import Network
 from rfinder.types import Box
 from rfinder.utils.merging import merge_overlapping
 
@@ -82,5 +82,5 @@ if __name__ == "__main__":
 
     net = Network()
 
-    net.train(all_pixels, all_boxes)
-    print("DONE")
+    net.train(all_pixels, all_boxes, num_epochs=50)
+    net.save()

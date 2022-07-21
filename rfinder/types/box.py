@@ -64,33 +64,37 @@ class Box:
 
     def scale(
         self,
-        cx: Optional[float] = None,
-        cy: Optional[float] = None,
-        w: Optional[float] = None,
-        h: Optional[float] = None,
+        cx_scale: Optional[float] = None,
+        cy_scale: Optional[float] = None,
+        w_scale: Optional[float] = None,
+        h_scale: Optional[float] = None,
+        all_scale: Optional[float] = None,
     ) -> "Box":
-        """
-        Scales box dimensions and position
-        Parameters:
-            cx: float
-                Value to scale cx by
-            cy: float
-                Value to scale cy by
-            w: float
-                Value to scale w by
-            h: float
-                Value to scale h by
+        """Scales box coordinates and dimensions
+
+        Args:
+            cx_scale (Optional[float], optional): Value to scale cx by. Defaults to
+            None.
+            cy_scale (Optional[float], optional): Value to scale cy by. Defaults to
+            None.
+            w_scale (Optional[float], optional): Value to scale w by. Defaults to None.
+            h_scale (Optional[float], optional): Value to scale h by. Defaults to None.
+            all_scale (Optional[float], optional): Value to scale everything by.
+            Overrides other arguments. Defaults to None.
+
         Returns:
-            None
+            Box: The scaled box
         """
-        if cx is not None:
-            self.cx *= cx
-        if cy is not None:
-            self.cy *= cy
-        if w is not None:
-            self.w *= w
-        if h is not None:
-            self.h *= h
+        if all_scale is not None:
+            cx_scale = cy_scale = w_scale = h_scale = all_scale
+        if cx_scale is not None:
+            self.cx *= cx_scale
+        if cy_scale is not None:
+            self.cy *= cy_scale
+        if w_scale is not None:
+            self.w *= w_scale
+        if h_scale is not None:
+            self.h *= h_scale
 
         return self
 

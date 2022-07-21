@@ -1,6 +1,6 @@
-from rfinder.types import Box
-
 import numpy as np
+
+from rfinder.types import Box
 
 
 def IOU(a: Box, b: Box) -> float:

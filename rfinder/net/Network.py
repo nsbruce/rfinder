@@ -6,7 +6,6 @@ import numpy.typing as npt
 import tensorflow as tf  # type:ignore
 from keras.layers import Activation, Dense, Dropout, Input  # type:ignore
 from keras.models import Sequential, load_model  # type:ignore
-from keras.losses import MeanAbsolutePercentageError  # type:ignore
 
 from rfinder.environment import load_env
 from rfinder.net.utils import postprocess_preds, prepare_tiles, preprocess_boxes
@@ -156,33 +155,50 @@ class Network:
             npt.NDArray[np.float_]: The loss for this batch with shape (batch_size, 1)
         """
 
+        # basic
         # loss = tf.math.divide_no_nan(tf.abs(y_pred - y_true), y_true)
         # loss = tf.math.reduce_sum(loss, axis=1)
         # return loss
 
+        # confidence focused
         y_true = tf.reshape(y_true, (-1, int(self.env["MAX_BLOBS_PER_TILE"]), 5))
         y_pred = tf.reshape(y_pred, (-1, int(self.env["MAX_BLOBS_PER_TILE"]), 5))
 
-        # loss defined by confidence
-        loss = tf.square(y_pred[:, :, 0] - y_true[:, :, 0])
+        tmp1 = tf.square(y_pred[:, :, 1] - y_true[:, :, 1])
+        tmp2 = tf.square(y_pred[:, :, 2] - y_true[:, :, 2])
+        loss = tf.reduce_sum(tf.multiply(y_true[:, :, 0], tmp1+tmp2))
 
-        # loss defined by center-to-center distance
-        loss += tf.sqrt(
-            tf.square(y_pred[:, :, 1] - y_true[:, :, 1])
-            +
-            tf.square(y_pred[:, :, 2] - y_true[:, :, 2])
-        )
-
-        # loss defined by height
-        loss += tf.math.divide_no_nan(
-                tf.abs(y_pred[:, :, 3] - y_true[:, :, 3]),
-                y_true[:, :, 3]
-            )
-
-        # loss defined by width
-        loss += tf.math.divide_no_nan(
-                tf.abs(y_pred[:, :, 4] - y_true[:, :, 4]),
-                y_true[:, :, 4]
-            )
+        tmp1 = tf.square(y_pred[:, :, 3] - y_true[:, :, 3])
+        tmp2 = tf.square(y_pred[:, :, 4] - y_true[:, :, 4])
+        loss += tf.reduce_sum(tf.multiply(y_true[:, :, 0], tmp1+tmp2))
+        loss += tf.reduce_sum(tf.square(y_true[:, :, 0] - y_pred[:, :, 0]))
 
         return loss
+
+        # initial
+        # y_true = tf.reshape(y_true, (-1, int(self.env["MAX_BLOBS_PER_TILE"]), 5))
+        # y_pred = tf.reshape(y_pred, (-1, int(self.env["MAX_BLOBS_PER_TILE"]), 5))
+
+        # # loss defined by confidence
+        # loss = tf.square(y_pred[:, :, 0] - y_true[:, :, 0])
+
+        # # loss defined by center-to-center distance
+        # loss += tf.sqrt(
+        #     tf.square(y_pred[:, :, 1] - y_true[:, :, 1])
+        #     +
+        #     tf.square(y_pred[:, :, 2] - y_true[:, :, 2])
+        # )
+
+        # # loss defined by height
+        # loss += tf.math.divide_no_nan(
+        #         tf.abs(y_pred[:, :, 3] - y_true[:, :, 3]),
+        #         y_true[:, :, 3]
+        #     )
+
+        # # loss defined by width
+        # loss += tf.math.divide_no_nan(
+        #         tf.abs(y_pred[:, :, 4] - y_true[:, :, 4]),
+        #         y_true[:, :, 4]
+        #     )
+
+        # return loss

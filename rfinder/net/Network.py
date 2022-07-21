@@ -156,9 +156,9 @@ class Network:
             npt.NDArray[np.float_]: The loss for this batch with shape (batch_size, 1)
         """
 
-        loss = tf.math.divide_no_nan(tf.abs(y_pred - y_true), y_true)
-        loss = tf.math.reduce_sum(loss, axis=1)
-        return loss
+        # loss = tf.math.divide_no_nan(tf.abs(y_pred - y_true), y_true)
+        # loss = tf.math.reduce_sum(loss, axis=1)
+        # return loss
 
         y_true = tf.reshape(y_true, (-1, int(self.env["MAX_BLOBS_PER_TILE"]), 5))
         y_pred = tf.reshape(y_pred, (-1, int(self.env["MAX_BLOBS_PER_TILE"]), 5))

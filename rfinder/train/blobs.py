@@ -49,6 +49,7 @@ def generate_training_set(
             max_x = min_x + blob_width
             max_y = min_y + blob_height
 
+            # TODO using np.random.uniform(1, 5) drastically increases loss
             pixels[min_x:max_x, min_y:max_y] = 1
 
             # create the label
@@ -65,6 +66,7 @@ def generate_training_set(
 
         pixels = np.transpose(pixels)
         pixels = gaussian_filter(pixels, 0.8)
+        pixels = np.clip(pixels, 0, 5)
 
         boxes = merge_overlapping(boxes)
 

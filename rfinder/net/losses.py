@@ -14,7 +14,7 @@ def sqrt_err(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
         npt.NDArray[np.float_]: The loss for this batch with shape (batch_size, 1)
     """
 
-    x = tf.square(y_pred-y_true)
+    x = tf.square(y_pred - y_true)
     coords_err = tf.sqrt(x[:, 1::5] + x[:, 2::5])
     loss = tf.reduce_sum(tf.multiply(y_true[:, 0::5], coords_err))
     dims_err = tf.sqrt(x[:, 3::5] + x[:, 4::5])
@@ -46,5 +46,3 @@ def normalized_sqrt_err(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
     loss += tf.reduce_sum(tf.multiply(y_true[:, 0::5], dims_err))
     loss += tf.reduce_sum(squared[:, 0::5])
     return loss
-
-

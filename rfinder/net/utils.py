@@ -49,7 +49,8 @@ def stack_boxes(boxes: List[List[Box]]) -> npt.NDArray[np.float_]:
         boxes (List[List[Box]]): Bounding boxes
 
     Returns:
-        List[List[np.float_]]: Bounding boxes with shape (num_tiles, max_blobs_per_tile, 5)
+        List[List[np.float_]]: Bounding boxes with shape (num_tiles,
+        max_blobs_per_tile, 5)
     """
     output = np.zeros((len(boxes), int(env["MAX_BLOBS_PER_TILE"]), 5))
     for i, tile in enumerate(boxes):
@@ -100,6 +101,24 @@ def stacked_predictions_to_boxes(
                 Box(predictions[i, j, :].tolist()).scale(all_scale=int(env["TILE_DIM"]))
             )
     return boxes
+
+
+def filter_preds(
+    predictions: List[List[Box]], minimum_confidence: float
+) -> List[List[Box]]:
+    """Takes a list of boxes and filters out boxes with confidence less than that provided
+
+    Args:
+        predictions (List[List[Box]]): Bounding boxes
+        minimum_confidence (float): Minimum confidence to keep a box
+
+    Returns:
+        List[List[Box]]: Filtered bounding boxes
+    """
+    return [
+        list(filter(lambda box: box.conf >= minimum_confidence, tile))
+        for tile in predictions
+    ]
 
 
 preprocess_boxes = flatten_boxes

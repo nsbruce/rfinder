@@ -7,8 +7,13 @@ from keras.layers import Activation, Dense, Dropout, Input  # type:ignore
 from keras.models import Sequential, load_model  # type:ignore
 
 from rfinder.environment import load_env
-from rfinder.net.utils import postprocess_preds, prepare_tiles, preprocess_boxes
 from rfinder.net.losses import sqrt_err
+from rfinder.net.utils import (
+    filter_preds,
+    postprocess_preds,
+    prepare_tiles,
+    preprocess_boxes,
+)
 from rfinder.types import Box
 
 
@@ -35,7 +40,7 @@ class Network:
         self.default_path = Path(__file__).parent.parent.parent / "models"
 
         self.model.compile(
-            optimizer='adam',
+            optimizer="adam",
             loss=sqrt_err,
         )
 
@@ -100,7 +105,8 @@ class Network:
         """
         _, all_X = self.prepare(tiles=tiles)
         predictions = self.model.predict(all_X)
-        return postprocess_preds(predictions)
+        predictions = postprocess_preds(predictions)
+        return filter_preds(predictions, float(self.env["MIN_CONFIDENCE"]))
 
     def save(self, name: Optional[str] = None) -> None:
         """Save the model
@@ -129,6 +135,5 @@ class Network:
             self.default_path.mkdir()
 
         self.model = load_model(
-            self.default_path / name,
-            custom_objects={'sqrt_err': sqrt_err}
+            self.default_path / name, custom_objects={"sqrt_err": sqrt_err}
         )

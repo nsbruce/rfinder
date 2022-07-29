@@ -1,4 +1,4 @@
-from .defaults import BLOB_VARS, DEFAULT_VARS
+from .defaults import BLOB_VARS, BUFFER_VARS, DEFAULT_VARS
 from .utils import get_env_dir
 
 
@@ -22,6 +22,11 @@ def main() -> None:
 
         f.write("# TRAINING ON BLOBS\n")
         for key, val in BLOB_VARS.items():
+            f.write("{}={}\n".format(key, val))
+        f.write("\n")
+
+        f.write("# RUNNING A BUFFER\n")
+        for key, val in BUFFER_VARS.items():
             f.write("{}={}\n".format(key, val))
         f.write("\n")
 

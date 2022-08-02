@@ -87,7 +87,7 @@ def test_scaled_box_placement() -> None:
         ],
         [
             Box([1.0, 24.0, 28.0, 12.0, 4.0]),
-        ]
+        ],
     ]
     expected = [
         Box([1.0, 132.0, 22.25, 8.0, 3.0]),
@@ -120,7 +120,7 @@ def test_scaled_box_placement_inverted() -> None:
         ],
         [
             Box([1.0, 24.0, 28.0, 12.0, 4.0]),
-        ]
+        ],
     ]
     expected = [
         Box([1.0, 132.0, 22.25, 8.0, 3.0]),
@@ -128,7 +128,9 @@ def test_scaled_box_placement_inverted() -> None:
         Box([1.0, 212.0, 13.25, 24.0, 3.0]),
     ]
 
-    placed = place_boxes(boxes, tile_dim, tile_overlap, channel_bw, f0, t_int, t0, invert_y=True)
+    placed = place_boxes(
+        boxes, tile_dim, tile_overlap, channel_bw, f0, t_int, t0, invert_y=True
+    )
 
     expected_list = [box.as_list() for box in expected]
     placed_list = [box.as_list() for box in placed]

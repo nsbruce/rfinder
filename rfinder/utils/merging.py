@@ -52,7 +52,7 @@ def merge_overlapping(boxes: List[Box]) -> List[Box]:
             merged_box = merge_all(boxes)
             independent_boxes.append(merged_box)
 
-        return independent_boxes
+        return merge_overlapping(independent_boxes)
 
 
 def merge_two(boxA: Box, boxB: Box) -> Box:

@@ -31,12 +31,13 @@ class WaterfallBuffer:
 
         #  Predictor
         self.net = Network()
+        self.net.load()
 
         #  Buffers
-        self.fill_counter: int = 0
+        self.prebuffer_idxs: int = 0
         self.prebuffer = np.zeros((self.tile_dim, num_chans))
         # self.prediction_input = np.zeros_like(self.prebuffer)
-        self.prebuffer_timestamps: List[float] = []
+        self.prebuffer_timestamps = np.zeros(self.tile_dim)
 
         #  Results
         self.closedDetections: List[Box] = []
@@ -71,19 +72,20 @@ class WaterfallBuffer:
             integration (npt.NDArray[np.float_]): Integration to add.
         """
         # Add to buffer
-        self.prebuffer[self.fill_counter, :] = integration
-        self.prebuffer_timestamps.append(timestamp)
-        self.fill_counter += 1
+        self.prebuffer[self.prebuffer_idxs, :] = integration
+        self.prebuffer_timestamps[self.prebuffer_idxs] = timestamp
+        self.prebuffer_idxs += 1
 
-        if self.fill_counter == self.tile_dim:
-            self.fill_counter -= self.tile_overlap
+        if self.prebuffer_idxs == self.tile_dim:
+            self.prebuffer_idxs -= self.tile_overlap
             prediction_input = self.prebuffer.copy()
+            prediction_t0 = self.prebuffer_timestamps[0].copy()
             # prediction_timestamps = self.prebuffer_timestamps.copy()
 
-            self.prebuffer = np.roll(self.prebuffer, -self.tile_overlap, axis=1)
-            prediction_t0: float = self.prebuffer_timestamps[
-                self.tile_dim - self.tile_overlap
-            ]
+            self.prebuffer = np.roll(self.prebuffer, -self.tile_overlap, axis=0)
+            self.prebuffer_timestamps = np.roll(
+                self.prebuffer_timestamps, -self.tile_overlap
+            )
 
             # Predict
             self.predict(prediction_input, prediction_t0)
@@ -94,7 +96,6 @@ class WaterfallBuffer:
         prediction_t0: float,
     ) -> None:
 
-        print(prediction_input.shape)
         # tile array: since the array is 2D, the windowing function fxpects to tile in
         # 2 directions but in our case only one fits. Hence we collapse the result into
         # the first dimension with [0].
@@ -110,11 +111,12 @@ class WaterfallBuffer:
 
         # predict and get boxes
         predictions = self.net.predict(tiles)
+        # print("predictions in buffer ")
         for tile, preds in zip(tiles, predictions):
             fig, ax = plt.subplots()
             rplt.tile(ax, tile, preds)
-            for pred in preds:
-                print(pred.as_list())
+            # for pred in preds:
+            #     print(pred.as_list())
             plt.show(block=False)
 
         # add boxes to onGoingDetections
@@ -135,8 +137,10 @@ class WaterfallBuffer:
         self.onGoingDetections = merge_overlapping(self.onGoingDetections)
 
         # filter closed boxes from onGoingDetections into closedDetections
-        filter_timestamp = prediction_t0 + self.t_int * (self.tile_overlap - 1)
+        self.sort_detections(prediction_t0 + self.t_int * self.tile_overlap)
+
+    def sort_detections(self, t_end: float) -> None:
         for box in self.onGoingDetections:
-            if box.cy + box.h / 2 > filter_timestamp:
+            if box.cy + box.h / 2 > t_end:
                 self.closedDetections.append(box)
                 self.onGoingDetections.remove(box)

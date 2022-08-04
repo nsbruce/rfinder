@@ -108,9 +108,7 @@ class Network:
             List[List[Box]]: List of bounding boxes for each tile
         """
         _, all_X = self.prepare(tiles=tiles)
-        predictions = self.model.predict(
-            x=all_X,
-            batch_size=self.batch_size)
+        predictions = self.model.predict(x=all_X, batch_size=self.batch_size)
         predictions = postprocess_preds(predictions)
         return filter_preds(predictions, float(self.env["MIN_CONFIDENCE"]))
 

@@ -35,15 +35,8 @@ def tile(
     if invert_y:
         tile = np.flipud(tile)
 
-    ax.imshow(
-        tile,
-        aspect="equal",
-        origin="lower",
-        interpolation="none"
-        )
+    ax.imshow(tile, aspect="equal", origin="lower", interpolation="none")
 
-    # ax.set_yticks(np.arange(0, tile.shape[0], 1))
-    # ax.set_yticklabels(ax.get_yticks()[::-1])
     if boxesA:
         add_center_dot_patch(ax, boxesA, "white")
         add_rect_patch(ax, boxesA, "white")

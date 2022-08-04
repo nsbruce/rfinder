@@ -1,5 +1,5 @@
 from rfinder.types import Box
-from rfinder.utils.merging import merge_overlapping
+from rfinder.utils.merging import merge_overlapping, merge_x_overlapping
 
 
 def test_two_independent_boxes() -> None:
@@ -53,3 +53,13 @@ def test_four_recursively_overlapping_boxes() -> None:
     merged = merge_overlapping(boxes)
 
     assert merged[0].as_list() == expected[0].as_list(), "Merged result is not correct"
+
+
+def test_two_overlapping_in_x_boxes() -> None:
+    boxes = [Box([1.0, 15, 15, 9, 9]), Box([1.0, 17, 17, 9, 9])][::-1]
+
+    merged = merge_x_overlapping(boxes)
+
+    assert (
+        merged[0].as_list() == Box([1.0, 16, 16, 11, 11]).as_list()
+    ), "Merged result is not correct"

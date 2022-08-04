@@ -10,7 +10,7 @@ def place_boxes(
     channel_bw: float,
     f0: float,
     t_int: float,
-    t0: float,
+    t_0: float,
     invert_y: bool = False,
 ) -> List[Box]:
     """Rescale and shift boxes to their correct location in time and frequency.
@@ -21,8 +21,8 @@ def place_boxes(
         tile_overlap (int): Tile overlap in pixels
         channel_bw (float): Channel bandwidth in Hz
         f0 (float): Start frequency of the waterfall in Hz
-        t_int (float): Integration time in seconds
-        t0 (float): Start time of the waterfall in seconds
+        t_int (float): Integration time in some float unit
+        t_0 (float): Start time of the waterfall in the same float unit as t_int
         invert_y (bool): Whether to invert the y-axis
 
     Returns:
@@ -42,7 +42,7 @@ def place_boxes(
             # Scale box in time
             box.scale(cy_scale=t_int, h_scale=t_int)
             # Shift box in time
-            box.shift(y=t0)
+            box.shift(y=t_0)
 
             output.append(box)
 

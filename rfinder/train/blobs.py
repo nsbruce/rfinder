@@ -53,12 +53,12 @@ def generate_training_set(
             # ? first index is "rows", second is "columns"
             pixels[min_y:max_y, min_x:max_x] = 1
 
-            # create the label
+            # create the label such that 0,0 is bottom left for y
             blob_box = Box(
                 [
                     1.0,  # conf
                     np.mean([max_x, min_x]) - 0.5,  # cx
-                    np.mean([max_y, min_y]) - 0.5,  # cy
+                    tile_dim - np.mean([max_y, min_y]) - 0.5,  # cy
                     max_x - min_x,  # w
                     max_y - min_y,  # h
                 ]

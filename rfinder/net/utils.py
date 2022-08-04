@@ -115,7 +115,8 @@ def stacked_predictions_to_boxes(
 def filter_preds(
     predictions: List[List[Box]], minimum_confidence: float
 ) -> List[List[Box]]:
-    """Takes a list of boxes and filters out boxes with confidence less than that provided
+    """Takes a list of boxes and filters out boxes with confidence less than that
+    provided or with an impossible bounding box.
 
     Args:
         predictions (List[List[Box]]): Bounding boxes
@@ -125,7 +126,9 @@ def filter_preds(
         List[List[Box]]: Filtered bounding boxes
     """
     return [
-        list(filter(lambda box: box.conf >= minimum_confidence, tile))
+        list(
+            filter(lambda box: box.conf >= minimum_confidence and box.area() > 0, tile)
+        )
         for tile in predictions
     ]
 

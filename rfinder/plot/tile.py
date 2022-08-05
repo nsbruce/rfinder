@@ -16,6 +16,7 @@ def tile(
     boxesA: Optional[List[Box]] = None,
     boxesB: Optional[List[Box]] = None,
     title: Optional[str] = None,
+    invert_y: bool = True,
 ) -> None:
     """Plots a single tile
 
@@ -26,11 +27,16 @@ def tile(
         boxesB (Optional[List[Box]], optional): Other boxes to overlay. Defaults to
         None.
         title (Optional[str], optional): Figure title. Defaults to None.
+        invert_y (bool): Whether to invert the y axis. Defaults to True.
     """
     if title:
         ax.set_title(title)
 
-    ax.imshow(tile, aspect="equal", origin="lower")
+    if invert_y:
+        tile = np.flipud(tile)
+
+    ax.imshow(tile, aspect="equal", origin="lower", interpolation="none")
+
     if boxesA:
         add_center_dot_patch(ax, boxesA, "white")
         add_rect_patch(ax, boxesA, "white")

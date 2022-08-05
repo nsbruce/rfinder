@@ -7,7 +7,7 @@ from keras.layers import Activation, Dense, Dropout, Input  # type:ignore
 from keras.models import Sequential, load_model  # type:ignore
 
 from rfinder.environment import load_env
-from rfinder.net.losses import sqrt_err
+from rfinder.net.losses import normalized_sqrt_err
 from rfinder.net.utils import (
     filter_preds,
     postprocess_preds,
@@ -27,6 +27,10 @@ class Network:
 
         self.model = Sequential(
             [
+                # TODO
+                # Flatten(input_shape=(
+                #     int(self.env["TILE_DIM"]), int(self.env["TILE_DIM"]))
+                # ),
                 Input(
                     shape=(int(self.env["TILE_DIM"]) ** 2), batch_size=self.batch_size
                 ),
@@ -41,7 +45,7 @@ class Network:
 
         self.model.compile(
             optimizer="adam",
-            loss=sqrt_err,
+            loss=normalized_sqrt_err,
         )
 
     def prepare(
@@ -104,7 +108,7 @@ class Network:
             List[List[Box]]: List of bounding boxes for each tile
         """
         _, all_X = self.prepare(tiles=tiles)
-        predictions = self.model.predict(all_X)
+        predictions = self.model.predict(x=all_X, batch_size=self.batch_size)
         predictions = postprocess_preds(predictions)
         return filter_preds(predictions, float(self.env["MIN_CONFIDENCE"]))
 
@@ -135,5 +139,6 @@ class Network:
             self.default_path.mkdir()
 
         self.model = load_model(
-            self.default_path / name, custom_objects={"sqrt_err": sqrt_err}
+            self.default_path / name,
+            custom_objects={"normalized_sqrt_err": normalized_sqrt_err},
         )

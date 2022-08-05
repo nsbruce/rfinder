@@ -1,3 +1,4 @@
+import time
 from typing import List
 
 import numpy as np
@@ -31,12 +32,13 @@ class WaterfallBuffer:
 
         #  Predictor
         self.net = Network()
+        self.net.load()
 
         #  Buffers
-        self.fill_counter: int = 0
+        self.prebuffer_idx: int = self.tile_dim - 1
         self.prebuffer = np.zeros((self.tile_dim, num_chans))
         # self.prediction_input = np.zeros_like(self.prebuffer)
-        self.prebuffer_timestamps: List[float] = []
+        self.prebuffer_timestamps = np.zeros(self.tile_dim)
 
         #  Results
         self.closedDetections: List[Box] = []
@@ -71,19 +73,18 @@ class WaterfallBuffer:
             integration (npt.NDArray[np.float_]): Integration to add.
         """
         # Add to buffer
-        self.prebuffer[self.fill_counter, :] = integration
-        self.prebuffer_timestamps.append(timestamp)
-        self.fill_counter += 1
+        self.prebuffer[self.prebuffer_idx, :] = integration
+        self.prebuffer_timestamps[self.prebuffer_idx] = timestamp
+        self.prebuffer_idx -= 1
 
-        if self.fill_counter == self.tile_dim:
-            self.fill_counter -= self.tile_overlap
-            prediction_input = self.prebuffer.copy()
-            # prediction_timestamps = self.prebuffer_timestamps.copy()
-
-            self.prebuffer = np.roll(self.prebuffer, -self.tile_overlap, axis=1)
-            prediction_t0: float = self.prebuffer_timestamps[
-                self.tile_dim - self.tile_overlap
-            ]
+        if self.prebuffer_idx == -1:
+            self.prebuffer_idx += self.tile_overlap
+            prediction_input = self.prebuffer
+            prediction_t0 = self.prebuffer_timestamps[-1]
+            self.prebuffer = np.roll(self.prebuffer, self.tile_overlap, axis=0)
+            self.prebuffer_timestamps = np.roll(
+                self.prebuffer_timestamps, self.tile_overlap
+            )
 
             # Predict
             self.predict(prediction_input, prediction_t0)
@@ -94,10 +95,10 @@ class WaterfallBuffer:
         prediction_t0: float,
     ) -> None:
 
-        print(prediction_input.shape)
         # tile array: since the array is 2D, the windowing function fxpects to tile in
         # 2 directions but in our case only one fits. Hence we collapse the result into
         # the first dimension with [0].
+        print("tiling", time.time())
         tiles = view_as_windows(
             arr_in=prediction_input,
             window_shape=(self.tile_dim, self.tile_dim),
@@ -106,17 +107,11 @@ class WaterfallBuffer:
 
         tiles = [tiles[i, :, :] for i in range(tiles.shape[0])]
 
-        # TODO check edge cases
-
+        print("predicting", time.time())
         # predict and get boxes
         predictions = self.net.predict(tiles)
-        for tile, preds in zip(tiles, predictions):
-            fig, ax = plt.subplots()
-            rplt.tile(ax, tile, preds)
-            for pred in preds:
-                print(pred.as_list())
-            plt.show(block=False)
 
+        print("placing tiles", time.time())
         # add boxes to onGoingDetections
         self.onGoingDetections.extend(
             # put boxes into correct time-frequency location
@@ -127,16 +122,27 @@ class WaterfallBuffer:
                 channel_bw=self.channel_bw,
                 f0=self.f0,
                 t_int=self.t_int,
-                t0=prediction_t0,
+                t_0=prediction_t0,
             )
         )
 
         # merge boxes in onGoingDetections
+        print("merging", time.time())
         self.onGoingDetections = merge_overlapping(self.onGoingDetections)
 
         # filter closed boxes from onGoingDetections into closedDetections
-        filter_timestamp = prediction_t0 + self.t_int * (self.tile_overlap - 1)
+        print("sorting", time.time())
+        self.sort_detections(prediction_t0 + self.t_int * self.tile_overlap)
+        print("done", time.time())
+
+    def sort_detections(self, t_end: float) -> None:
+        """Consider all boxes in onGoingDetections and if their end time is before the
+        t_end argument, move the box into closedDetections.
+
+        Args:
+            t_end (float): The time after which a box can no longer be merged with.
+        """
         for box in self.onGoingDetections:
-            if box.cy + box.h / 2 > filter_timestamp:
-                self.closedDetections.append(box)
+            if box.cy + box.h / 2 < t_end:
                 self.onGoingDetections.remove(box)
+                self.closedDetections.append(box)

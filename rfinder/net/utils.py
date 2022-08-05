@@ -74,6 +74,15 @@ def flattened_predictions_to_boxes(
     for i in range(predictions.shape[0]):
         boxes.append([])
         for j in range(predictions.shape[1] // 5):
+            # b = Box(predictions[i][j * 5 : j * 5 + 5])
+            # if b.conf > 0.25:
+            #     print('b', b.as_list())
+            # b.scale(
+            #         all_scale=int(env["TILE_DIM"])
+            #     )
+            # if b.conf > 0.25:
+            #     print('a', b.as_list())
+            # boxes[i].append(b)
             boxes[i].append(
                 Box(predictions[i][j * 5 : j * 5 + 5]).scale(
                     all_scale=int(env["TILE_DIM"])
@@ -106,7 +115,8 @@ def stacked_predictions_to_boxes(
 def filter_preds(
     predictions: List[List[Box]], minimum_confidence: float
 ) -> List[List[Box]]:
-    """Takes a list of boxes and filters out boxes with confidence less than that provided
+    """Takes a list of boxes and filters out boxes with confidence less than that
+    provided or with an impossible bounding box.
 
     Args:
         predictions (List[List[Box]]): Bounding boxes
@@ -116,7 +126,9 @@ def filter_preds(
         List[List[Box]]: Filtered bounding boxes
     """
     return [
-        list(filter(lambda box: box.conf >= minimum_confidence, tile))
+        list(
+            filter(lambda box: box.conf >= minimum_confidence and box.area() > 0, tile)
+        )
         for tile in predictions
     ]
 

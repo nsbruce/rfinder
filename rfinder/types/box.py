@@ -98,10 +98,26 @@ class Box:
 
         return self
 
-    def as_list(self) -> List[float]:
+    def as_list(self, limits: bool = False) -> List[float]:
+        """Returns box as a list. When `limits` argument is False (default), box is
+        [conf, cx, cy, w, h] when `limits` argument is True, box is
+        [conf, x_min, y_min, x_max, y_max].
+
+        Args:
+            limits (bool, optional): Whether to return limits instead of center
+            coordinates and width/height. Defaults to False.
+
+        Returns:
+            List[float]: The box values.
         """
-        Returns box elements as a list
-        """
+        if limits:
+            return [
+                self.conf,
+                self.cx - self.w / 2,
+                self.cy - self.h / 2,
+                self.cx + self.w / 2,
+                self.cy + self.h / 2,
+            ]
         return [self.conf, self.cx, self.cy, self.w, self.h]
 
     def area(self) -> float:

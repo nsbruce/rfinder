@@ -20,11 +20,13 @@ def merge_overlapping(boxes: List[Box]) -> List[Box]:
 
     independent_boxes: List[Box] = []
     overlapping_boxes: List[Box] = []
+    print("Checking for overlapping boxes", len(boxes))
     for box in boxes:
         if not any(box.overlaps(other) for other in boxes if other != box):
             independent_boxes.append(box)
         else:
             overlapping_boxes.append(box)
+    print("checked for overlaps", len(overlapping_boxes), len(independent_boxes))
 
     if len(overlapping_boxes) == 0:
         return independent_boxes
@@ -53,6 +55,24 @@ def merge_overlapping(boxes: List[Box]) -> List[Box]:
             independent_boxes.append(merged_box)
 
         return merge_overlapping(independent_boxes)
+
+
+def merge_x_overlapping(boxes: List[Box]) -> List[Box]:
+    result = []
+    arr = np.empty((len(boxes), 5))
+    for i, box in enumerate(boxes):
+        arr[i] = box.as_list(limits=True)
+    print("now have an arr instead of a list of boxes")
+    print(arr)
+    arr = arr[arr[:, 1].argsort()]
+    print("sorted arr by x0")
+    print(arr)
+
+    # current = arr[0]
+    # for i in range(1, len(arr)):
+    #     if arr[i,3]
+
+    return []
 
 
 def merge_two(boxA: Box, boxB: Box) -> Box:

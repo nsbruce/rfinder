@@ -50,21 +50,22 @@ def generate_training_set(
             max_y = min_y + blob_height
 
             # TODO using np.random.uniform(1, 5) drastically increases loss
-            pixels[min_x:max_x, min_y:max_y] = 1
+            # ? first index is "rows", second is "columns"
+            pixels[min_y:max_y, min_x:max_x] = 1
 
-            # create the label
+            # create the label such that 0,0 is bottom left for y
             blob_box = Box(
                 [
                     1.0,  # conf
                     np.mean([max_x, min_x]) - 0.5,  # cx
-                    np.mean([max_y, min_y]) - 0.5,  # cy
+                    tile_dim - np.mean([max_y, min_y]) - 0.5,  # cy
                     max_x - min_x,  # w
                     max_y - min_y,  # h
                 ]
             )
             boxes.append(blob_box)
 
-        pixels = np.transpose(pixels)
+        # pixels = np.transpose(pixels)
         pixels = gaussian_filter(pixels, 0.8)
         pixels = np.clip(pixels, 0, 5)
 

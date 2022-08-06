@@ -11,7 +11,7 @@ from rfinder.environment import load_env
 from rfinder.net.Network import Network
 from rfinder.stream.utils import place_boxes
 from rfinder.types import Box
-from rfinder.utils.merging import merge_overlapping
+from rfinder.utils.merging import merge_via_rtree
 
 
 class WaterfallBuffer:
@@ -98,7 +98,8 @@ class WaterfallBuffer:
         # tile array: since the array is 2D, the windowing function fxpects to tile in
         # 2 directions but in our case only one fits. Hence we collapse the result into
         # the first dimension with [0].
-        print("tiling", time.time())
+        START = time.time()
+        print("tiling", START)
         tiles = view_as_windows(
             arr_in=prediction_input,
             window_shape=(self.tile_dim, self.tile_dim),
@@ -107,11 +108,11 @@ class WaterfallBuffer:
 
         tiles = [tiles[i, :, :] for i in range(tiles.shape[0])]
 
-        print("predicting", time.time())
+        print("predicting", time.time()-START)
         # predict and get boxes
         predictions = self.net.predict(tiles)
 
-        print("placing tiles", time.time())
+        print("placing tiles", time.time()-START)
         # add boxes to onGoingDetections
         self.onGoingDetections.extend(
             # put boxes into correct time-frequency location
@@ -127,13 +128,13 @@ class WaterfallBuffer:
         )
 
         # merge boxes in onGoingDetections
-        print("merging", time.time())
-        self.onGoingDetections = merge_overlapping(self.onGoingDetections)
+        print("merging", len(self.onGoingDetections), 'detections', time.time()-START)
+        self.onGoingDetections = merge_via_rtree(self.onGoingDetections)
 
         # filter closed boxes from onGoingDetections into closedDetections
-        print("sorting", time.time())
+        print("sorting", time.time()-START)
         self.sort_detections(prediction_t0 + self.t_int * self.tile_overlap)
-        print("done", time.time())
+        print("done", time.time()-START)
 
     def sort_detections(self, t_end: float) -> None:
         """Consider all boxes in onGoingDetections and if their end time is before the

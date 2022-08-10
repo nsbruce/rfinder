@@ -71,13 +71,3 @@ def list_split(li: List[T], n: int) -> List[List[T]]:
         list_of_sublists.append(li[i * sublistLen : i * sublistLen + sublistLen])
     list_of_sublists.append(li[(n - 1) * sublistLen :])
     return list_of_sublists
-
-
-def list_split_overlapping_frequency(
-    li: List[Box], n: int, overlap: float
-) -> List[List[T]]:
-
-    # Sort list by center frequency
-    li.sort(key=lambda x: x.cx)
-
-    return []

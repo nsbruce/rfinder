@@ -1,4 +1,4 @@
-from rfinder.stream.utils import place_boxes
+from rfinder.stream.utils import list_split, place_boxes
 from rfinder.types import Box
 
 
@@ -136,3 +136,11 @@ def test_scaled_box_placement_inverted() -> None:
     placed_list = [box.as_list() for box in placed]
 
     assert placed_list == expected_list, "Placed boxes are not correct"
+
+
+def test_list_splitter() -> None:
+    input = [1, 2, 3, 4, 5, 6, 7, 8]
+    n = 3
+    expected = [[1, 2, 3], [4, 5, 6], [7, 8]]
+
+    assert list_split(input, n) == expected, "List split is not correct"

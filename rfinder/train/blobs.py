@@ -7,7 +7,7 @@ from scipy.ndimage import gaussian_filter  # type:ignore
 from rfinder.environment import load_env
 from rfinder.net import Network
 from rfinder.types import Box
-from rfinder.utils.merging import merge_overlapping
+from rfinder.utils.merging import merge_via_rtree
 
 env = load_env()
 
@@ -69,7 +69,7 @@ def generate_training_set(
         pixels = gaussian_filter(pixels, 0.8)
         pixels = np.clip(pixels, 0, 5)
 
-        boxes = merge_overlapping(boxes)
+        boxes = merge_via_rtree(boxes)
 
         all_boxes.append(boxes)
         all_pixels.append(pixels)

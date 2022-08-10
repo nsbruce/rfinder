@@ -59,43 +59,6 @@ def merge_overlapping(boxes: List[Box]) -> List[Box]:
         return merge_overlapping(independent_boxes)
 
 
-# def merge_with_cv(boxes: List[Box]) -> List[Box]:
-#     """Merges boxes using OpenCV. HOWEVER THIS TAKES AVERAGE INSTEAD OF EXTENT
-
-#     Args:
-#         boxes (List[Box]): List of boxes to merge
-
-#     Returns:
-#         List[Box]: Resulting merged boxes
-#     """
-#     arr = [box.as_list()[1:] for box in boxes]
-#     merged = cv2.groupRectangles(arr, groupThreshold=1, eps=0.1)[0]
-#     merged = np.insert(merged, 0, 1.0, axis=1)
-#     print(merged)
-#     result = []
-#     for m in merged:
-#         b = Box(m)
-#         result.append(b)
-#     return result
-
-
-# def merge_via_sweep(boxes: List[Box]) -> List[Box]:
-#     result = []
-#     # arr = np.empty((len(boxes), 5))
-#     # for i, box in enumerate(boxes):
-#     #     arr[i] = box.as_list(limits=True)
-#     # print("now have an arr instead of a list of boxes")
-#     # print(arr)
-#     # arr = arr[arr[:, 1].argsort()]
-#     # print("sorted arr by x0")
-#     # print(arr)
-
-#     boxes.sort(key=lambda b: b.cx - b.w / 2)
-#     # current_x = arr[0, 1]
-
-# return []
-
-
 def merge_via_rtree(boxes: List[Box]) -> List[Box]:
     """Merges list of boxes when they overlap using an rtree structure as described in
     https://stackoverflow.com/a/48565371/8844897.
@@ -106,6 +69,10 @@ def merge_via_rtree(boxes: List[Box]) -> List[Box]:
     Returns:
         List[Box]: non-overlapping boxes
     """
+
+    if len(boxes) <= 1:
+        return boxes
+
     idx = index.Index()
     unique_id = 0
 

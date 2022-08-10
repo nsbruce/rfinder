@@ -1,6 +1,10 @@
-from typing import List
+from typing import List, TypeVar
+
+import numpy as np
 
 from rfinder.types import Box
+
+T = TypeVar("T")
 
 
 def place_boxes(
@@ -47,3 +51,33 @@ def place_boxes(
             output.append(box)
 
     return output
+
+
+def list_split(li: List[T], n: int) -> List[List[T]]:
+    """A list version of numpy's array_split. Will try to split the input list into n
+    equal sized lists if possible. If not, will return a list of lists of length n with
+    the last list containing the remaining elements of the input list.
+
+    Args:
+        li (List[T]): List to split
+        n (int): Number of desired output lists
+
+    Returns:
+        List[List[T]]: List of n lists
+    """
+    sublistLen = int(np.ceil(len(li) / n))
+    list_of_sublists = []
+    for i in range(n - 1):
+        list_of_sublists.append(li[i * sublistLen : i * sublistLen + sublistLen])
+    list_of_sublists.append(li[(n - 1) * sublistLen :])
+    return list_of_sublists
+
+
+def list_split_overlapping_frequency(
+    li: List[Box], n: int, overlap: float
+) -> List[List[T]]:
+
+    # Sort list by center frequency
+    li.sort(key=lambda x: x.cx)
+
+    return []

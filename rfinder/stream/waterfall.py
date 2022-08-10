@@ -5,7 +5,6 @@ from typing import List
 
 import numpy as np
 import numpy.typing as npt
-
 from skimage.util import view_as_windows  # type: ignore
 
 from rfinder.environment import load_env
@@ -140,36 +139,42 @@ class WaterfallBuffer:
             time.time() - START,
         )
 
-        with Pool(self.num_processes) as pool:
-            # split detections into ~evenly sized chunks for parallel processing
-            split_detections = list_split(self.onGoingDetections, self.num_processes)
+        if len(self.onGoingDetections) > self.num_processes * 10:
 
-            # empty onGoingDetections so it can be filled with the merged detections
-            self.onGoingDetections = []
-            print("onGoingDetections", len(self.onGoingDetections))
-
-            print("len(split_detections)", len(split_detections))
-
-            self.boundary_detections: List[
-                Box
-            ] = []  # store merged detections near each boundary
-
-            for li in split_detections:
-                print("merging", len(li))
-
-            async_results = []
-            for li in split_detections:
-                async_results.append(
-                    pool.apply_async(
-                        merge_via_rtree,
-                        args=(li,),
-                        callback=self.__async_merge_callback__,
-                    )
+            with Pool(self.num_processes) as pool:
+                # split detections into ~evenly sized chunks for parallel processing
+                split_detections = list_split(
+                    self.onGoingDetections, self.num_processes
                 )
-            for r in async_results:
-                r.wait()
 
-            self.onGoingDetections.extend(merge_via_rtree(self.boundary_detections))
+                # empty onGoingDetections so it can be filled with the merged detections
+                self.onGoingDetections = []
+                print("onGoingDetections", len(self.onGoingDetections))
+
+                print("len(split_detections)", len(split_detections))
+
+                self.boundary_detections: List[
+                    Box
+                ] = []  # store merged detections near each boundary
+
+                for li in split_detections:
+                    print("merging", len(li))
+
+                async_results = []
+                for li in split_detections:
+                    async_results.append(
+                        pool.apply_async(
+                            merge_via_rtree,
+                            args=(li,),
+                            callback=self.__async_merge_callback__,
+                        )
+                    )
+                for r in async_results:
+                    r.wait()
+
+                self.onGoingDetections.extend(merge_via_rtree(self.boundary_detections))
+        else:
+            self.onGoingDetections = merge_via_rtree(self.onGoingDetections)
 
         print(
             "merged boxes",

@@ -36,7 +36,6 @@ def generate_training_set(
         pixels = np.random.normal(0, 0.2, (tile_dim, tile_dim))
 
         for _ in range(np.random.randint(0, int(env["MAX_BLOBS_PER_TILE"]) + 1)):
-
             blob_height, blob_width = np.random.randint(
                 min_blob_dim, max_blob_dim + 1, size=2
             )  # length/width of the source
@@ -79,11 +78,14 @@ def generate_training_set(
     return all_boxes, all_pixels
 
 
-if __name__ == "__main__":
-
+def main() -> None:
     all_boxes, all_pixels = generate_training_set(50000)
 
     net = Network()
 
     net.train(all_pixels, all_boxes, num_epochs=50)
     net.save()
+
+
+if __name__ == "__main__":
+    main()

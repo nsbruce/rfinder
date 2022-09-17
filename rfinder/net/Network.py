@@ -1,10 +1,12 @@
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 import numpy as np
 import numpy.typing as npt
+import tensorflow as tf  # type:ignore
 from keras.layers import Activation, Dense, Dropout, Input  # type:ignore
 from keras.models import Sequential, load_model  # type:ignore
+from tensorboard.plugins.hparams import api as hp  # type:ignore
 
 from rfinder.environment import load_env
 from rfinder.net.losses import normalized_sqrt_err
@@ -25,7 +27,25 @@ class Network:
 
         self.batch_size = 32
 
-        self.model = Sequential(
+        self.default_path = Path(__file__).parent.parent.parent / "models"
+
+        self.model = self.build_model()
+
+        self.compile()
+
+    def build_model(
+        self, num_units: hp.HParam | None = None, dropout: hp.HParam | None = None
+    ) -> Sequential:
+        """Builds the model with the given hyperparameters
+
+        Args:
+            hparams (dict): Dictionary of hyperparameters
+
+        Returns:
+            None: Does not return anything
+        """
+
+        return Sequential(
             [
                 # TODO
                 # Flatten(input_shape=(
@@ -34,18 +54,23 @@ class Network:
                 Input(
                     shape=(int(self.env["TILE_DIM"]) ** 2), batch_size=self.batch_size
                 ),
-                Dense(256),
+                Dense(num_units if num_units is not None else 256),
                 Activation("relu"),
-                Dropout(0.25),
+                Dropout(dropout if dropout is not None else 0.25),
                 Dense(int(self.env["MAX_BLOBS_PER_TILE"]) * 5),
             ]
         )
 
-        self.default_path = Path(__file__).parent.parent.parent / "models"
+    def compile(self) -> None:
+        """Compile the model
 
+        Returns:
+            None: Does not return anything
+        """
         self.model.compile(
             optimizer="adam",
             loss=normalized_sqrt_err,
+            metrics=["accuracy"],
         )
 
     def prepare(
@@ -73,6 +98,7 @@ class Network:
         tiles: List[npt.NDArray[np.float_]],
         boxes: List[List[Box]],
         num_epochs: int = 50,
+        hparams: dict[hp.HParam, Any] | None = None,
     ) -> None:
         """Trains the network on a set of tiles and bounding boxes
 
@@ -86,6 +112,14 @@ class Network:
         train_X, test_X = np.split(all_X, [split_idx])
         train_Y, test_Y = np.split(all_Y, [split_idx])
 
+        callbacks: List[tf.Tensorboard | hp.KerasCallback] | None = None
+        if hparams is not None:
+            print("Setting up callbacks")
+            callbacks = [
+                tf.keras.callbacks.TensorBoard("logs/hparam_tuning"),
+                hp.KerasCallback("logs/hparam_tuning", hparams),
+            ]
+
         self.model.fit(
             train_X,
             train_Y,
@@ -93,6 +127,7 @@ class Network:
             shuffle=True,
             validation_data=(test_X, test_Y),
             batch_size=self.batch_size,
+            callbacks=callbacks,
         )
 
     def predict(
@@ -142,3 +177,9 @@ class Network:
             self.default_path / name,
             custom_objects={"normalized_sqrt_err": normalized_sqrt_err},
         )
+
+    def evaluate(
+        self, tiles: List[npt.NDArray[np.float_]], boxes: List[List[Box]]
+    ) -> Tuple[float, float]:
+        Y, X = self.prepare(tiles, boxes)
+        return self.model.evaluate(x=X, y=Y)

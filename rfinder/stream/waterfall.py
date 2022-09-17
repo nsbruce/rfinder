@@ -18,7 +18,6 @@ class WaterfallBuffer:
     def __init__(
         self, t_int: float, channel_bw: float, f0: float, num_chans: int
     ) -> None:
-
         #  Class arguments
         self.t_int = t_int
         self.channel_bw = channel_bw
@@ -104,7 +103,6 @@ class WaterfallBuffer:
     def __update_buffer__(
         self, prediction_input: npt.NDArray[np.float_], prediction_t0: float
     ) -> None:
-
         START = time.time()
 
         # Predict
@@ -140,7 +138,6 @@ class WaterfallBuffer:
         )
 
         if len(self.onGoingDetections) > self.num_processes * 10:
-
             with Pool(self.num_processes) as pool:
                 # split detections into ~evenly sized chunks for parallel processing
                 split_detections = list_split(
@@ -217,7 +214,6 @@ class WaterfallBuffer:
         self,
         prediction_input: npt.NDArray[np.float_],
     ) -> List[List[Box]]:
-
         # tile array: since the array is 2D, the windowing function fxpects to tile in
         # 2 directions but in our case only one fits. Hence we collapse the result into
         # the first dimension with [0].

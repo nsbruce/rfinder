@@ -3,12 +3,15 @@ from multiprocessing import Pool
 from os import cpu_count
 from typing import List
 
+import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
 from skimage.util import view_as_windows  # type: ignore
 
+import rfinder.plot as rplt
 from rfinder.environment import load_env
 from rfinder.net.Network import Network
+from rfinder.plot.utils import add_rect_patch
 from rfinder.stream.utils import list_split, place_boxes
 from rfinder.types import Box
 from rfinder.utils.merging import merge_via_rtree
@@ -28,6 +31,15 @@ class WaterfallBuffer:
         self.tile_dim = int(self.env["TILE_DIM"])
         self.tile_overlap = int(self.env["TILE_OVERLAP"])
         self.boxes_per_tile = int(self.env["MAX_BLOBS_PER_TILE"])
+
+        # TODO raise warning if there are edge cases. See
+        # TODO ```
+        # TODO view_as_windows(np.arange(64), window_shape=32, step=24)
+        # TODO ```
+        # TODO vs
+        # TODO ```
+        # TODO view_as_windows(np.arange(64), window_shape=32, step=16)
+        # TODO ```
 
         #  Predictor
         self.net = Network()
@@ -220,13 +232,20 @@ class WaterfallBuffer:
         tiles = view_as_windows(
             arr_in=prediction_input,
             window_shape=(self.tile_dim, self.tile_dim),
-            step=self.tile_overlap,
+            step=self.tile_dim - self.tile_overlap,
         )[0]
 
         tiles = [tiles[i, :, :] for i in range(tiles.shape[0])]
 
         # predict and get boxes
-        return self.net.predict(tiles)
+        boxes = self.net.predict(tiles)
+        fig, axs = plt.subplots(1, len(tiles))
+        axs = axs.flatten()[: len(tiles)]
+        for tile, box, ax in zip(tiles, boxes, axs):
+            rplt.tile(ax, tile)
+            add_rect_patch(ax, box, "r")
+        plt.show(block=False)
+        return boxes
 
     def __sort_detections__(self, t_end: float) -> None:
         """Consider all boxes in onGoingDetections and if their end time is before the

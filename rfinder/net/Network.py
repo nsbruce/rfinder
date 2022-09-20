@@ -4,7 +4,7 @@ from typing import Any, List, Optional, Tuple
 import numpy as np
 import numpy.typing as npt
 import tensorflow as tf  # type:ignore
-from keras.layers import Activation, Dense, Dropout, Input  # type:ignore
+from keras.layers import Activation, Dense, Dropout, Input, Conv2D, MaxPool2D  # type:ignore
 from keras.models import Sequential, load_model  # type:ignore
 from tensorboard.plugins.hparams import api as hp  # type:ignore
 
@@ -33,9 +33,7 @@ class Network:
 
         self.compile()
 
-    def build_model(
-        self, num_units: hp.HParam | None = None, dropout: hp.HParam | None = None
-    ) -> Sequential:
+    def build_model(self) -> Sequential:
         """Builds the model with the given hyperparameters
 
         Args:
@@ -45,21 +43,51 @@ class Network:
             None: Does not return anything
         """
 
+        # return Sequential(
+        #     [
+        #         # TODO
+        #         # Flatten(input_shape=(
+        #         #     int(self.env["TILE_DIM"]), int(self.env["TILE_DIM"]))
+        #         # ),
+        #         Input(
+        #             shape=(
+        #                 int(self.env["TILE_DIM"]) ** 2
+        #             )  # , batch_size=self.batch_size
+        #         ),
+        #         Dense(1024),  # started with 256
+        #         Activation("relu"),  # started with 'relu
+        #         # Dropout(0.1),  # started with 0.25
+        #         Dense(256),  # started with 256
+        #         Activation("relu"),  # started with 'relu
+        #         # Dropout(0.25),  # started with 0.25
+        #         Dense(64),
+        #         Activation("relu"),
+        #         Dense(int(self.env["MAX_BLOBS_PER_TILE"]) * 5),
+        #         Activation("sigmoid"), # everything should be between 0 and 1
+        #     ]
+        # )
+
+        # This works well for 32x32 tiles with 1 blob each
         return Sequential(
             [
-                # TODO
-                # Flatten(input_shape=(
-                #     int(self.env["TILE_DIM"]), int(self.env["TILE_DIM"]))
-                # ),
                 Input(
-                    shape=(int(self.env["TILE_DIM"]) ** 2), batch_size=self.batch_size
+                    shape=(
+                        int(self.env["TILE_DIM"]) ** 2
+                    )  # , batch_size=self.batch_size
                 ),
-                Dense(num_units if num_units is not None else 256),
-                Activation("relu"),
-                Dropout(dropout if dropout is not None else 0.25),
+                Dense(1024),  # started with 256
+                Activation("relu"),  # started with 'relu
+                Dropout(0.1),  # started with 0.25
                 Dense(int(self.env["MAX_BLOBS_PER_TILE"]) * 5),
+                # Activation("sigmoid"), # everything should be between 0 and 1
             ]
         )
+        # return Sequential(
+        #     [
+        #         Input(shape=(int(self.env["TILE_DIM"]) ** 2,)),
+        #         Conv2d()
+        #     ]
+        # )
 
     def compile(self) -> None:
         """Compile the model
@@ -98,7 +126,8 @@ class Network:
         tiles: List[npt.NDArray[np.float_]],
         boxes: List[List[Box]],
         num_epochs: int = 50,
-        hparams: dict[hp.HParam, Any] | None = None,
+        callbacks: List[hp.KerasCallback]
+        | None = None  # [tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=10)],
     ) -> None:
         """Trains the network on a set of tiles and bounding boxes
 
@@ -111,14 +140,6 @@ class Network:
         split_idx = int(len(all_X) * 0.8)
         train_X, test_X = np.split(all_X, [split_idx])
         train_Y, test_Y = np.split(all_Y, [split_idx])
-
-        callbacks: List[tf.Tensorboard | hp.KerasCallback] | None = None
-        if hparams is not None:
-            print("Setting up callbacks")
-            callbacks = [
-                tf.keras.callbacks.TensorBoard("logs/hparam_tuning"),
-                hp.KerasCallback("logs/hparam_tuning", hparams),
-            ]
 
         self.model.fit(
             train_X,

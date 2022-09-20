@@ -17,6 +17,7 @@ from rfinder.net.utils import (
     preprocess_boxes,
 )
 from rfinder.types import Box
+from rfinder.net.models import single_blob_detector
 
 
 class Network:
@@ -29,65 +30,9 @@ class Network:
 
         self.default_path = Path(__file__).parent.parent.parent / "models"
 
-        self.model = self.build_model()
+        self.model = single_blob_detector()
 
         self.compile()
-
-    def build_model(self) -> Sequential:
-        """Builds the model with the given hyperparameters
-
-        Args:
-            hparams (dict): Dictionary of hyperparameters
-
-        Returns:
-            None: Does not return anything
-        """
-
-        # return Sequential(
-        #     [
-        #         # TODO
-        #         # Flatten(input_shape=(
-        #         #     int(self.env["TILE_DIM"]), int(self.env["TILE_DIM"]))
-        #         # ),
-        #         Input(
-        #             shape=(
-        #                 int(self.env["TILE_DIM"]) ** 2
-        #             )  # , batch_size=self.batch_size
-        #         ),
-        #         Dense(1024),  # started with 256
-        #         Activation("relu"),  # started with 'relu
-        #         # Dropout(0.1),  # started with 0.25
-        #         Dense(256),  # started with 256
-        #         Activation("relu"),  # started with 'relu
-        #         # Dropout(0.25),  # started with 0.25
-        #         Dense(64),
-        #         Activation("relu"),
-        #         Dense(int(self.env["MAX_BLOBS_PER_TILE"]) * 5),
-        #         Activation("sigmoid"), # everything should be between 0 and 1
-        #     ]
-        # )
-
-        # This works well for 32x32 tiles with 1 blob each
-        return Sequential(
-            [
-                Input(
-                    shape=(
-                        int(self.env["TILE_DIM"]) ** 2
-                    )  # , batch_size=self.batch_size
-                ),
-                Dense(1024),  # started with 256
-                Activation("relu"),  # started with 'relu
-                Dropout(0.1),  # started with 0.25
-                Dense(int(self.env["MAX_BLOBS_PER_TILE"]) * 5),
-                # Activation("sigmoid"), # everything should be between 0 and 1
-            ]
-        )
-        # return Sequential(
-        #     [
-        #         Input(shape=(int(self.env["TILE_DIM"]) ** 2,)),
-        #         Conv2d()
-        #     ]
-        # )
 
     def compile(self) -> None:
         """Compile the model

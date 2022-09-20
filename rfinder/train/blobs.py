@@ -173,9 +173,9 @@ def generate_blob_balanced_training_set(
 
 
 def main() -> None:
-    # all_boxes, all_pixels = generate_training_set(40000)
-    dset = Path(__file__).parent.parent.parent / "training_data" / "3maxblobs_80000tiles_balanced_dataset.pkl"
-    boxes, pixels = load_dataset(dset)
+    boxes, pixels = generate_training_set(10000)
+    # dset = Path(__file__).parent.parent.parent / "training_data" / "3maxblobs_80000tiles_balanced_dataset.pkl"
+    # boxes, pixels = load_dataset(dset)
 
     net = Network()
 

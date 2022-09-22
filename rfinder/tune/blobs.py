@@ -79,9 +79,15 @@ def tune() -> None:
 def tune2() -> None:
     # net = Network()
     env = load_env()
-    boxes, tiles = generate_training_set(10000)
+    boxes, tiles = generate_training_set(40000)
 
     def build_model(hp: hp) -> Sequential:
+        isfinal_activation = hp.Boolean("isfinal_activation")
+        if isfinal_activation:
+            activation2 = hp.Choice('activation2', ['relu', 'sigmoid', 'linear'])
+        else:
+            activation2 = None
+
         model = Sequential(
             [
                 Input(shape=(int(env["TILE_DIM"]) ** 2)),
@@ -92,7 +98,7 @@ def tune2() -> None:
                     ),
                 ),
                 Dropout(hp.Choice("dropout", [0.1, 0.2, 0.3, 0.4, 0.5])),
-                Dense(int(env["MAX_BLOBS_PER_TILE"]) * 5),
+                Dense(int(env["MAX_BLOBS_PER_TILE"]) * 5, activation=activation2),
             ]
         )
         model.compile(
@@ -104,7 +110,7 @@ def tune2() -> None:
     tuner = keras_tuner.RandomSearch(
         build_model,
         objective="val_loss",
-        max_trials=50,
+        max_trials=150,
     )
 
     Y = preprocess_boxes(boxes) if boxes else np.array([])
@@ -116,6 +122,8 @@ def tune2() -> None:
     tuner.search(train_X, train_Y, epochs=30, validation_data=(test_X, test_Y))
     tuner.results_summary(num_trials=3)
 
+def main():
+    tune2()
 
 if __name__ == "__main__":
     tune2()

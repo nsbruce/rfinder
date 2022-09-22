@@ -1,5 +1,5 @@
-from keras.models import Sequential, load_model  # type:ignore
-from keras.layers import Activation, Dense, Dropout, Input, Conv2D, MaxPool2D  # type:ignore
+from keras.models import Sequential  # type:ignore
+from keras.layers import Activation, Dense, Dropout, Input  # type:ignore
 
 from rfinder.environment import load_env
 
@@ -17,10 +17,10 @@ def single_blob_detector() -> Sequential:
                 )  # , batch_size=self.batch_size
             ),
             Dense(1024),  # started with 256
-            Activation("relu"),  # started with 'relu
+            Activation("sigmoid"),  # started with 'relu
             Dropout(0.1),  # started with 0.25
             Dense(int(env["MAX_BLOBS_PER_TILE"]) * 5),
-            # Activation("sigmoid"), # everything should be between 0 and 1
+            Activation("sigmoid"), # everything should be between 0 and 1
         ]
     )
 

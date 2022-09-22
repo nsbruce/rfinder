@@ -28,7 +28,7 @@ def generate_training_set(
         list of bounding boxes and a numpy array of the tile's "pixels"
     """
 
-    min_blob_dim = 4
+    min_blob_dim = 2
     max_blob_dim = tile_dim = int(env["TILE_DIM"])
 
     all_boxes = []
@@ -173,7 +173,7 @@ def generate_blob_balanced_training_set(
 
 
 def main() -> None:
-    boxes, pixels = generate_training_set(10000)
+    boxes, pixels = generate_training_set(40000)
     # dset = Path(__file__).parent.parent.parent / "training_data" / "3maxblobs_80000tiles_balanced_dataset.pkl"
     # boxes, pixels = load_dataset(dset)
 

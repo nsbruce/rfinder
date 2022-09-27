@@ -3,15 +3,15 @@ from multiprocessing import Pool
 from os import cpu_count
 from typing import List
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
 from skimage.util import view_as_windows  # type: ignore
 
-import rfinder.plot as rplt
+# import rfinder.plot as rplt
 from rfinder.environment import load_env
 from rfinder.net.Network import Network
-from rfinder.plot.utils import add_rect_patch
+# from rfinder.plot.utils import add_rect_patch
 from rfinder.stream.utils import list_split, place_boxes
 from rfinder.types import Box
 from rfinder.utils.merging import merge_via_rtree
@@ -239,12 +239,12 @@ class WaterfallBuffer:
 
         # predict and get boxes
         boxes = self.net.predict(tiles)
-        fig, axs = plt.subplots(1, len(tiles))
-        axs = axs.flatten()[: len(tiles)]
-        for tile, box, ax in zip(tiles, boxes, axs):
-            rplt.tile(ax, tile)
-            add_rect_patch(ax, box, "r")
-        plt.show(block=False)
+        # fig, axs = plt.subplots(1, len(tiles))
+        # axs = axs.flatten()[: len(tiles)]
+        # for tile, box, ax in zip(tiles, boxes, axs):
+        #     rplt.tile(ax, tile)
+        #     add_rect_patch(ax, box, "r")
+        # plt.show(block=False)
         return boxes
 
     def __sort_detections__(self, t_end: float) -> None:

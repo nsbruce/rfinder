@@ -1,11 +1,9 @@
 from pathlib import Path
-from typing import Any, List, Optional, Tuple
+from typing import List, Optional, Tuple, cast
 
 import numpy as np
 import numpy.typing as npt
-import tensorflow as tf  # type:ignore
-from keras.layers import Activation, Dense, Dropout, Input, Conv2D, MaxPool2D  # type:ignore
-from keras.models import Sequential, load_model  # type:ignore
+from keras.models import load_model  # type:ignore
 from tensorboard.plugins.hparams import api as hp  # type:ignore
 
 from rfinder.environment import load_env
@@ -72,7 +70,7 @@ class Network:
         boxes: List[List[Box]],
         num_epochs: int = 50,
         callbacks: List[hp.KerasCallback]
-        | None = None  # [tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=10)],
+        | None = None
     ) -> None:
         """Trains the network on a set of tiles and bounding boxes
 
@@ -148,4 +146,4 @@ class Network:
         self, tiles: List[npt.NDArray[np.float_]], boxes: List[List[Box]]
     ) -> Tuple[float, float]:
         Y, X = self.prepare(tiles, boxes)
-        return self.model.evaluate(x=X, y=Y)
+        return cast(Tuple[float, float], self.model.evaluate(x=X, y=Y))

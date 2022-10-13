@@ -1,11 +1,11 @@
 DEFAULT_VARS = {
-    "TILE_DIM": 32,
+    "TILE_DIM": 16,
     "MODEL_NAME": "default",
     "MIN_CONFIDENCE": 0.25,
 }
 
 BLOB_VARS = {
-    "MAX_BLOBS_PER_TILE": 3,
+    "MAX_BLOBS_PER_TILE": 1,
 }
 
-BUFFER_VARS = {"TILE_OVERLAP": 16}
+BUFFER_VARS = {"TILE_OVERLAP": 12}

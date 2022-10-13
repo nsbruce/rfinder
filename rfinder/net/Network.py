@@ -1,10 +1,10 @@
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, cast
 
 import numpy as np
 import numpy.typing as npt
-from keras.layers import Activation, Dense, Dropout, Input  # type:ignore
-from keras.models import Sequential, load_model  # type:ignore
+from keras.models import load_model  # type:ignore
+from tensorboard.plugins.hparams import api as hp  # type:ignore
 
 from rfinder.environment import load_env
 from rfinder.net.losses import normalized_sqrt_err
@@ -15,6 +15,7 @@ from rfinder.net.utils import (
     preprocess_boxes,
 )
 from rfinder.types import Box
+from rfinder.net.models import single_blob_detector
 
 
 class Network:
@@ -25,27 +26,22 @@ class Network:
 
         self.batch_size = 32
 
-        self.model = Sequential(
-            [
-                # TODO
-                # Flatten(input_shape=(
-                #     int(self.env["TILE_DIM"]), int(self.env["TILE_DIM"]))
-                # ),
-                Input(
-                    shape=(int(self.env["TILE_DIM"]) ** 2), batch_size=self.batch_size
-                ),
-                Dense(256),
-                Activation("relu"),
-                Dropout(0.25),
-                Dense(int(self.env["MAX_BLOBS_PER_TILE"]) * 5),
-            ]
-        )
-
         self.default_path = Path(__file__).parent.parent.parent / "models"
 
+        self.model = single_blob_detector()
+
+        self.compile()
+
+    def compile(self) -> None:
+        """Compile the model
+
+        Returns:
+            None: Does not return anything
+        """
         self.model.compile(
             optimizer="adam",
             loss=normalized_sqrt_err,
+            metrics=["accuracy"],
         )
 
     def prepare(
@@ -73,6 +69,8 @@ class Network:
         tiles: List[npt.NDArray[np.float_]],
         boxes: List[List[Box]],
         num_epochs: int = 50,
+        callbacks: List[hp.KerasCallback]
+        | None = None
     ) -> None:
         """Trains the network on a set of tiles and bounding boxes
 
@@ -93,6 +91,7 @@ class Network:
             shuffle=True,
             validation_data=(test_X, test_Y),
             batch_size=self.batch_size,
+            callbacks=callbacks,
         )
 
     def predict(
@@ -142,3 +141,9 @@ class Network:
             self.default_path / name,
             custom_objects={"normalized_sqrt_err": normalized_sqrt_err},
         )
+
+    def evaluate(
+        self, tiles: List[npt.NDArray[np.float_]], boxes: List[List[Box]]
+    ) -> Tuple[float, float]:
+        Y, X = self.prepare(tiles, boxes)
+        return cast(Tuple[float, float], self.model.evaluate(x=X, y=Y))
